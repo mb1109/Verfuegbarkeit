@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meine Verfügbarkeit</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f5;
+    --bg3: #eeeeee;
+    --text: #1a1a1a;
+    --text2: #666666;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --radius: 8px;
+    --radius-lg: 12px;
+    --accent: #6264A7;
+    --accent-dark: #534AB7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1e;
+      --bg2: #2a2a2a;
+      --bg3: #333333;
+      --text: #f0f0f0;
+      --text2: #999999;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+  .app { max-width: 820px; margin: 0 auto; padding: 1.25rem 1rem; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .logo { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 17px; }
+  .app-title { font-size: 17px; font-weight: 500; color: var(--text); }
+  .app-sub { font-size: 12px; color: var(--text2); }
+  .view-toggle { display: flex; gap: 2px; background: var(--bg3); border-radius: 8px; padding: 3px; }
+  .vt-btn { padding: 5px 14px; border: none; background: transparent; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text2); font-family: inherit; transition: all .15s; }
+  .vt-btn.active { background: var(--bg); color: var(--accent); border: 0.5px solid var(--border2); }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem; padding: 10px 14px; background: var(--bg3); border-radius: var(--radius); }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .ld-office { background: #1D9E75; } .ld-home { background: #378ADD; } .ld-absent { background: #D85A30; } .ld-vacation { background: #EF9F27; } .ld-free { background: var(--border); }
+  .nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .nav-btn { background: none; border: 0.5px solid var(--border2); border-radius: 6px; padding: 5px 11px; cursor: pointer; color: var(--text); font-family: inherit; font-size: 13px; transition: background .15s; }
+  .nav-btn:hover { background: var(--bg3); }
+  .nav-label { font-size: 14px; font-weight: 500; color: var(--text); }
+  /* Week */
+  .week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .week-day { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; transition: border-color .15s; }
+  .week-day:hover { border-color: var(--accent); }
+  .week-day.today { border-color: var(--accent); border-width: 1.5px; }
+  .wd-head { padding: 8px 10px; border-bottom: 0.5px solid var(--border); }
+  .wd-name { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .04em; }
+  .wd-date { font-size: 15px; font-weight: 500; color: var(--text); margin-top: 2px; }
+  .wd-body { padding: 8px 10px; min-height: 58px; display: flex; flex-direction: column; gap: 4px; }
+  .status-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 5px; }
+  .sc-office { background: #E7F5EC; color: #0F6E56; } .sc-home { background: #E6F1FB; color: #185FA5; } .sc-absent { background: #FAECE7; color: #993C1D; } .sc-vacation { background: #FAEEDA; color: #854F0B; } .sc-free { background: var(--bg3); color: var(--text2); }
+  .note-text { font-size: 11px; color: var(--text2); font-style: italic; }
+  /* Month */
+  .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .mg-head { text-align: center; font-size: 11px; font-weight: 500; color: var(--text2); padding: 5px 0; letter-spacing: .03em; }
+  .mg-day { min-height: 56px; border: 0.5px solid var(--border); border-radius: 6px; padding: 4px 5px; cursor: pointer; transition: border-color .15s; background: var(--bg); }
+  .mg-day:hover:not(.mg-other):not(.mg-weekend) { border-color: var(--accent); }
+  .mg-day.mg-other { background: var(--bg3); opacity: .45; cursor: default; pointer-events: none; }
+  .mg-day.mg-weekend { background: var(--bg3); cursor: default; pointer-events: none; }
+  .mg-day.mg-today { border-color: var(--accent); border-width: 1.5px; }
+  .mg-num { font-size: 11px; font-weight: 500; color: var(--text2); margin-bottom: 3px; }
+  .mg-num.mg-today-num { color: var(--accent); }
+  .mg-bar { height: 6px; border-radius: 3px; width: 100%; margin-top: 4px; }
+  .bar-office { background: #1D9E75; } .bar-home { background: #378ADD; } .bar-absent { background: #D85A30; } .bar-vacation { background: #EF9F27; }
+  /* Modal */
+  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 50; align-items: center; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); padding: 1.25rem; width: 300px; max-width: 92vw; }
+  .modal-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 1rem; }
+  .m-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: block; }
+  .m-select, .m-input { width: 100%; height: 36px; padding: 0 10px; border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 13px; background: var(--bg); color: var(--text); font-family: inherit; margin-bottom: 12px; }
+  .m-select:focus, .m-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(98,100,167,.18); }
+  .m-btns { display: flex; gap: 8px; justify-content: space-between; align-items: center; margin-top: 4px; }
+  .m-del { padding: 7px 10px; background: none; border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 12px; cursor: pointer; color: var(--text2); font-family: inherit; transition: all .15s; }
+  .m-del:hover { background: #FAECE7; color: #993C1D; border-color: #D85A30; }
+  .m-actions { display: flex; gap: 8px; }
+  .m-cancel { padding: 7px 14px; background: none; border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 13px; cursor: pointer; color: var(--text); font-family: inherit; }
+  .m-ok { padding: 7px 16px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .m-ok:hover { background: var(--accent-dark); }
+  /* Share bar */
+  .share-bar { margin-top: 1rem; padding: 12px 14px; background: var(--bg3); border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .share-text { font-size: 12px; color: var(--text2); }
+  .share-btn { padding: 6px 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+  .share-btn:hover { background: var(--accent-dark); }
+  /* Toast */
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 9px 20px; border-radius: var(--radius); font-size: 13px; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 100; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 540px) {
+    .week-grid { grid-template-columns: repeat(2, 1fr); }
+    .week-grid .week-day:last-child { grid-column: span 2; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><i class="ti ti-calendar-check"></i></div>
+      <div>
+        <div class="app-title">Meine Verfügbarkeit</div>
+        <div class="app-sub">Klick auf einen Tag zum Bearbeiten</div>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <button class="vt-btn active" onclick="setView('week')">Woche</button>
+      <button class="vt-btn" onclick="setView('month')">Monat</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><span class="leg-dot ld-office"></span>Im Büro</div>
+    <div class="leg"><span class="leg-dot ld-home"></span>Home-Office</div>
+    <div class="leg"><span class="leg-dot ld-absent"></span>Abwesend</div>
+    <div class="leg"><span class="leg-dot ld-vacation"></span>Urlaub</div>
+    <div class="leg"><span class="leg-dot ld-free"></span>Kein Eintrag</div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn" onclick="navBack()"><i class="ti ti-chevron-left"></i></button>
+    <span class="nav-label" id="nav-label"></span>
+    <button class="nav-btn" onclick="navFwd()"><i class="ti ti-chevron-right"></i></button>
+  </div>
+
+  <div id="view-week">
+    <div class="week-grid" id="week-grid"></div>
+  </div>
+  <div id="view-month" style="display:none">
+    <div class="month-grid" id="month-grid"></div>
+  </div>
+
+  <div class="share-bar">
+    <span class="share-text"><i class="ti ti-info-circle" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>Teile diese Ansicht mit deinen Kollegen</span>
+    <button class="share-btn" onclick="copyShareLink()"><i class="ti ti-link" style="font-size:14px"></i>Link kopieren</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal" onclick="bgClose(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <label class="m-label">Status</label>
+    <select class="m-select" id="m-status">
+      <option value="office">Im Büro</option>
+      <option value="home">Home-Office</option>
+      <option value="absent">Abwesend</option>
+      <option value="vacation">Urlaub</option>
+    </select>
+    <label class="m-label">Notiz (optional)</label>
+    <input class="m-input" id="m-note" maxlength="60" placeholder="z.B. nur am Nachmittag">
+    <div class="m-btns">
+      <button class="m-del" onclick="delEntry()"><i class="ti ti-trash" style="font-size:13px;vertical-align:-1px"></i> Löschen</button>
+      <div class="m-actions">
+        <button class="m-cancel" onclick="closeModal()">Abbrechen</button>
+        <button class="m-ok" onclick="saveModal()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const MONTHS = ['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DAYS = ['Mo','Di','Mi','Do','Fr'];
+const STATUS = {
+  office:   { label:'Im Büro',     chip:'sc-office',   bar:'bar-office' },
+  home:     { label:'Home-Office', chip:'sc-home',     bar:'bar-home' },
+  absent:   { label:'Abwesend',    chip:'sc-absent',   bar:'bar-absent' },
+  vacation: { label:'Urlaub',      chip:'sc-vacation', bar:'bar-vacation' }
+};
+
+function fmt(d){ return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
+function p2(n){ return String(n).padStart(2,'0'); }
+
+let data = {};
+try { data = JSON.parse(localStorage.getItem('meine_verfuegbarkeit') || '{}'); } catch(e) {}
+function persist(){ try { localStorage.setItem('meine_verfuegbarkeit', JSON.stringify(data)); } catch(e) {} }
+
+// Load shared data from URL if present
+const params = new URLSearchParams(location.search);
+if (params.get('v')) {
+  try { data = JSON.parse(atob(params.get('v'))); persist(); } catch(e) {}
+}
+
+let view = 'week', weekOffset = 0;
+let monthDate = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+let modalDateStr = '';
+
+function setView(v) {
+  view = v;
+  document.getElementById('view-week').style.display = v === 'week' ? '' : 'none';
+  document.getElementById('view-month').style.display = v === 'month' ? '' : 'none';
+  document.querySelectorAll('.vt-btn').forEach((b,i) => b.classList.toggle('active', ['week','month'][i] === v));
+  render();
+}
+
+function getMondayOfWeek(offset) {
+  const d = new Date(TODAY);
+  const dow = TODAY.getDay() || 7;
+  d.setDate(TODAY.getDate() - dow + 1 + offset * 7);
+  return d;
+}
+
+function navBack() { if (view === 'week') weekOffset--; else monthDate = new Date(monthDate.getFullYear(), monthDate.getMonth()-1, 1); render(); }
+function navFwd()  { if (view === 'week') weekOffset++; else monthDate = new Date(monthDate.getFullYear(), monthDate.getMonth()+1, 1); render(); }
+function render() { view === 'week' ? renderWeek() : renderMonth(); }
+
+function renderWeek() {
+  const mon = getMondayOfWeek(weekOffset);
+  const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+  document.getElementById('nav-label').textContent =
+    mon.getDate() + '. ' + MONTHS[mon.getMonth()] +
+    (mon.getMonth() !== fri.getMonth() ? ' – ' + fri.getDate() + '. ' + MONTHS[fri.getMonth()] : '') +
+    (mon.getFullYear() !== TODAY.getFullYear() ? ' ' + mon.getFullYear() : '');
+  const g = document.getElementById('week-grid');
+  g.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(mon); d.setDate(mon.getDate() + i);
+    const ds = fmt(d);
+    const isToday = ds === fmt(TODAY);
+    const e = data[ds];
+    const s = e ? STATUS[e.status] : null;
+    const div = document.createElement('div');
+    div.className = 'week-day' + (isToday ? ' today' : '');
+    div.innerHTML = `<div class="wd-head">
+      <div class="wd-name">${DAYS[i]}</div>
+      <div class="wd-date">${d.getDate()}. ${MONTHS[d.getMonth()]}</div>
+    </div>
+    <div class="wd-body">
+      <div class="status-chip ${s ? s.chip : 'sc-free'}">${s ? s.label : '— kein Eintrag'}</div>
+      ${e && e.note ? `<div class="note-text">${e.note}</div>` : ''}
+    </div>`;
+    div.onclick = () => openModal(ds, d);
+    g.appendChild(div);
+  }
+}
+
+function renderMonth() {
+  document.getElementById('nav-label').textContent = MONTHS[monthDate.getMonth()] + ' ' + monthDate.getFullYear();
+  const g = document.getElementById('month-grid');
+  g.innerHTML = '';
+  ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(d => {
+    const h = document.createElement('div'); h.className = 'mg-head'; h.textContent = d; g.appendChild(h);
+  });
+  const firstDow = (monthDate.getDay() || 7) - 1;
+  const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth()+1, 0).getDate();
+  const prevDays = new Date(monthDate.getFullYear(), monthDate.getMonth(), 0).getDate();
+  for (let i = firstDow-1; i >= 0; i--) {
+    const c = document.createElement('div'); c.className = 'mg-day mg-other';
+    c.innerHTML = `<div class="mg-num">${prevDays - i}</div>`; g.appendChild(c);
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+    const ds = fmt(d);
+    const dow = d.getDay();
+    const isWeekend = dow === 0 || dow === 6;
+    const isToday = ds === fmt(TODAY);
+    const e = data[ds];
+    const s = e ? STATUS[e.status] : null;
+    const c = document.createElement('div');
+    c.className = 'mg-day' + (isWeekend ? ' mg-weekend' : '') + (isToday ? ' mg-today' : '');
+    c.innerHTML = `<div class="mg-num${isToday ? ' mg-today-num' : ''}">${day}</div>${s ? `<div class="mg-bar ${s.bar}"></div>` : ''}`;
+    if (!isWeekend) c.onclick = () => openModal(ds, d);
+    g.appendChild(c);
+  }
+  const total = firstDow + daysInMonth;
+  const trail = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i = 1; i <= trail; i++) {
+    const c = document.createElement('div'); c.className = 'mg-day mg-other';
+    c.innerHTML = `<div class="mg-num">${i}</div>`; g.appendChild(c);
+  }
+}
+
+function openModal(ds, d) {
+  modalDateStr = ds;
+  const e = data[ds];
+  document.getElementById('modal-title').textContent =
+    DAYS[(d.getDay() || 7) - 1] + ', ' + d.getDate() + '. ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  document.getElementById('m-status').value = e ? e.status : 'office';
+  document.getElementById('m-note').value = e ? (e.note || '') : '';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function bgClose(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+function saveModal() {
+  data[modalDateStr] = { status: document.getElementById('m-status').value, note: document.getElementById('m-note').value.trim() };
+  persist(); closeModal(); render(); toast('Gespeichert ✓');
+}
+function delEntry() {
+  delete data[modalDateStr];
+  persist(); closeModal(); render(); toast('Eintrag gelöscht');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function copyShareLink() {
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const url = location.href.split('?')[0] + '?v=' + encoded;
+  navigator.clipboard.writeText(url)
+    .then(() => toast('Link kopiert!'))
+    .catch(() => { prompt('Diesen Link kopieren:', url); });
+}
+
+render();
+</script>
+</body>
+</html>
